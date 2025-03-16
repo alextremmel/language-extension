@@ -1,3 +1,0 @@
-when filtering words, should also search within related words
-make the highlights show up on every word and website
-be able to add spaces to words like 이 so it only gets highlighted when it is by itself, not in a word
