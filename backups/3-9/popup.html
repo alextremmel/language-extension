@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Word Highlighter</title>
+    <script src="popup.js" defer></script>
+</head>
+<body>
+    <h3>Word Highlighter</h3>
+
+    <div class="switch-container">
+        <label for="toggleHighlighting">Enable Highlighting</label>
+        <label class="switch">
+            <input type="checkbox" id="toggleHighlighting">
+            <span class="slider"></span>
+        </label>
+    </div>
+
+    <label>Word:</label>
+    <input type="text" id="wordInput">
+
+    <label>Level:</label>
+    <select id="levelInput">
+        <option value="1">1 - Easy (Green)</option>
+        <option value="2">2 - Medium (Yellow)</option>
+        <option value="3">3 - Hard (Orange)</option>
+        <option value="4">4 - Very Hard (Red)</option>
+    </select>
+
+    <label>Language:</label>
+    <select id="languageInput">
+        <option value="English">English</option>
+        <option value="Korean">Korean</option>
+    </select>
+
+    <label>Context:</label>
+    <input type="text" id="contextInput">
+
+    <label>Notes:</label>
+    <input type="text" id="notesInput">
+
+    <label>Definition:</label>
+    <input type="text" id="definitionInput">
+
+    <button id="saveWord">Save Word</button>
+    <button id="viewWords">View All Words</button>
+</body>
+</html>

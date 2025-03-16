@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Saved Words</title>
+    <script src="words.js" defer></script>
+    <style>
+        .related-words-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .related-words-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .related-words-list li button {
+            margin-left: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <h1>Manage Saved Words</h1>
+
+    <button class="btn btn-export" id="exportWords">Export</button>
+    <button class="btn btn-export" id="copyWords">Copy to Clipboard</button>
+    <input type="file" id="importFile" style="display:none;">
+    <button class="btn btn-import" id="importWords">Import</button>
+
+    <h3>Filter Words</h3>
+    <label>Word:</label>
+    <input type="text" id="filterWord">
+    <label>Level:</label>
+    <select id="filterLevel">
+        <option value="">All</option>
+        <option value="1">1 - Easy (Green)</option>
+        <option value="2">2 - Medium (Yellow)</option>
+        <option value="3">3 - Hard (Orange)</option>
+        <option value="4">4 - Very Hard (Red)</option>
+        <option value="5">5 - Proper Noun (Blue)</option>
+    </select>
+    <label>Language:</label>
+    <select id="filterLanguage">
+        <option value="">All</option>
+        <option value="Korean">Korean</option>
+        <option value="English">English</option>
+        <option value="French">French</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Chinese">Chinese</option>
+    </select>
+    <button class="btn btn-filter" id="filterWords">Filter</button>
+    
+
+    <h3>Add a New Word</h3>
+    <label>Word:</label>
+    <input type="text" id="newWord">
+    <label>Level:</label>
+    <select id="newLevel">
+        <option value="1">1 - Easy (Green)</option>
+        <option value="2">2 - Medium (Yellow)</option>
+        <option value="3">3 - Hard (Orange)</option>
+        <option value="4">4 - Very Hard (Red)</option>
+        <option value="5">5 - Proper Noun (Blue)</option>
+    </select>
+    <label>Language:</label>
+    <select id="newLanguage">
+        <option value="Korean">Korean</option>
+        <option value="English">English</option>
+        <option value="French">French</option>
+        <option value="Spanish">Spanish</option>
+        <option value="Chinese">Chinese</option>
+    </select>
+    <label>Notes:</label>
+    <input type="text" id="newNotes">
+    <label>Definition:</label>
+    <input type="text" id="newDefinition">
+    <label>Related Words:</label>
+    <input type="text" id="newRelatedWordInput">
+    <button id="addRelatedWord">Add Related Word</button>
+    <ul id="newRelatedWordsList" class="related-words-list"></ul>
+    <button class="btn btn-save" id="addWord">Add Word</button>
+
+    <p>
+
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Word</th>
+                <th>Level</th>
+                <th>Language</th>
+                <th>Notes</th>
+                <th>Definition</th>
+                <th>Related Words</th>
+                <th>Date Added</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="wordTableBody"></tbody>
+    </table>
+</body>
+</html>
