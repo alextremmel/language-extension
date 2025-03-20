@@ -33,7 +33,9 @@ chrome.storage.local.get(["enabled", "userWords"], (data) => {
 
     console.log("Highlighting these words:", allWords);
 
-    const regex = new RegExp(`(${allWords.join("|")})`, "gi");
+    // Replace underscores with word boundaries
+    const regexWords = allWords.map(word => word.replace(/_/g, '\\b'));
+    const regex = new RegExp(`(${regexWords.join("|")})`, "gi");
 
     function highlightText(node) {
         try {
@@ -42,7 +44,7 @@ chrome.storage.local.get(["enabled", "userWords"], (data) => {
                 if (parent && (parent.nodeName === "SCRIPT" || parent.nodeName === "STYLE")) return;
 
                 const replacedHTML = node.nodeValue.replace(regex, match => {
-                    const wordInfo = userWords[match.toLowerCase()] || {};
+                    const wordInfo = userWords[match.toLowerCase().replace(/\b/g, '_')] || {};
                     const level = wordInfo.level || 1; // Default to level 1
                     const tooltip = wordInfo.definition ? `title='${wordInfo.definition}'` : "";
                     return `<span class="highlight-level-${level}" ${tooltip}>${match}</span>`;
