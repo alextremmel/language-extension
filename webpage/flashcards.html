@@ -12,28 +12,32 @@
   </header>
 
   <h1>Flashcards</h1>
+
+  <!-- Language selection dropdown -->
+  <label for="languageFilter">Select Language:</label>
+  <select id="languageFilter">
+    <option value="">Any Language</option>
+    <option value="Korean">Korean</option>
+    <option value="English">English</option>
+    <option value="Chinese">Chinese</option>
+  </select>
+
   <div id="flashcard">
     <p id="definition">Click "Next" to start!</p>
-    <!-- Added autocomplete="off" to prevent suggestions -->
     <input type="text" id="wordInput" placeholder="Type your guess here" autocomplete="off" />
     <p id="word" style="display: none;"></p>
   </div>
   <div id="controls" style="display: none;">
-    <!-- Added a paragraph to display the current level -->
-    <p id="currentLevel">Current Level: </p>
-    <label>
-      Adjust Level:
-      <select id="levelAdjust">
-        <option value="1">1 (Easy)</option>
-        <option value="2">2 (Medium)</option>
-        <option value="3">3 (Hard)</option>
-        <option value="4">4 (Very Hard)</option>
-        <option value="5">5 (Proper Noun)</option>
-      </select>
-    </label>
-    <button id="saveLevelButton">Save Level</button>
+    <table id="levelTable" style="border-collapse: collapse; margin-top: 10px;">
+      <tr>
+        <td class="level-box" data-level="1">1</td>
+        <td class="level-box" data-level="2">2</td>
+        <td class="level-box" data-level="3">3</td>
+        <td class="level-box" data-level="4">4</td>
+        <td class="level-box" data-level="5">5</td>
+      </tr>
+    </table>
   </div>
-  <button id="nextButton" style="display: none;">Next</button>
   <script type="module" src="flashcards.js"></script>
 </body>
 </html>

@@ -1,25 +1,82 @@
 let currentWordId = null;
 let currentWordData = null;
 
-// Fetch words from storage and filter by levels 2, 3, and 4
 function getRandomWord(callback) {
+  const selectedLanguage = document.querySelector("#languageFilter").value;
+
   chrome.runtime.sendMessage({ action: "getWords" }, (response) => {
-    const words = Object.entries(response).filter(([id, wordData]) => {
-      return wordData.level >= 2 && wordData.level <= 4;
-    });
+    let words = Object.entries(response);
+
+    // Filter words by the selected language if a language is selected
+    if (selectedLanguage) {
+      words = words.filter(([wordId, wordData]) => wordData.language === selectedLanguage);
+    }
 
     if (words.length === 0) {
-      alert("No words available for levels 2, 3, or 4.");
+      alert("No words available for the selected language.");
       return;
     }
 
-    const randomIndex = Math.floor(Math.random() * words.length);
-    const [wordId, wordData] = words[randomIndex];
+    // Create a weighted array based on word levels
+    const weightedWords = [];
+    words.forEach(([wordId, wordData]) => {
+      let weight;
+      switch (wordData.level) {
+        case 1:
+          weight = 1; // Rarely include level 1 words
+          break;
+        case 2:
+          weight = 4; // Moderate weight for level 2
+          break;
+        case 3:
+          weight = 8; // Higher weight for level 3
+          break;
+        case 4:
+          weight = 10; // Highest weight for level 4
+          break;
+        default:
+          weight = 0; // Exclude words with invalid levels
+      }
+
+      for (let i = 0; i < weight; i++) {
+        weightedWords.push([wordId, wordData]);
+      }
+    });
+
+    if (weightedWords.length === 0) {
+      alert("No words available after weighting.");
+      return;
+    }
+
+    // Select a random word from the weighted array
+    const randomIndex = Math.floor(Math.random() * weightedWords.length);
+    const [wordId, wordData] = weightedWords[randomIndex];
     callback(wordId, wordData);
   });
 }
 
-// Display the flashcard with the definition
+// Add an event listener to reload flashcards when the language is changed
+document.querySelector("#languageFilter").addEventListener("change", () => {
+  getRandomWord(displayFlashcard);
+});
+
+// Handle clicks on the level table
+document.querySelectorAll(".level-box").forEach((box) => {
+  box.addEventListener("click", () => {
+    // Remove the 'selected' class from all boxes
+    document.querySelectorAll(".level-box").forEach((b) => b.classList.remove("selected"));
+
+    // Add the 'selected' class to the clicked box
+    box.classList.add("selected");
+
+    // Update the currentWordData level to reflect the selected level
+    if (currentWordData) {
+      currentWordData.level = parseInt(box.dataset.level, 10);
+    }
+  });
+});
+
+// Highlight the current level in the table when displaying a flashcard
 function displayFlashcard(wordId, wordData) {
   currentWordId = wordId;
   currentWordData = wordData;
@@ -28,9 +85,7 @@ function displayFlashcard(wordId, wordData) {
   const wordInput = document.querySelector("#wordInput");
   const wordElement = document.querySelector("#word");
   const controls = document.querySelector("#controls");
-  const levelAdjust = document.querySelector("#levelAdjust");
-  const currentLevel = document.querySelector("#currentLevel");
-  const nextButton = document.querySelector("#nextButton");
+  const levelBoxes = document.querySelectorAll(".level-box");
 
   definitionElement.textContent = wordData.definition;
   wordInput.value = "";
@@ -38,46 +93,40 @@ function displayFlashcard(wordId, wordData) {
   wordElement.textContent = wordData.word;
   wordElement.style.display = "none";
   controls.style.display = "none";
-  nextButton.style.display = "none";
 
-  // Set the dropdown to the current level of the word
-  levelAdjust.value = wordData.level;
-
-  // Update the current level display
-  currentLevel.textContent = `Current Level: ${wordData.level}`;
+  // Highlight the current level in the table
+  levelBoxes.forEach((box) => {
+    box.classList.remove("selected");
+    if (parseInt(box.dataset.level, 10) === wordData.level) {
+      box.classList.add("selected");
+    }
+  });
 
   // Focus the input box
   wordInput.focus();
 }
 
-// Handle the enter key for revealing the word and moving to the next word
-document.querySelector("#wordInput").addEventListener("keydown", (event) => {
+document.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     const wordElement = document.querySelector("#word");
     const controls = document.querySelector("#controls");
-    const nextButton = document.querySelector("#nextButton");
 
     if (wordElement.style.display === "none") {
       // Reveal the word
       wordElement.style.display = "block";
       controls.style.display = "block";
-      nextButton.style.display = "inline-block";
     } else {
-      // Load the next word
-      getRandomWord(displayFlashcard);
+      // Save the new level and load the next word
+      const selectedBox = document.querySelector(".level-box.selected");
+      const newLevel = parseInt(selectedBox.dataset.level, 10);
+
+      if (currentWordId && currentWordData) {
+        const updatedData = { ...currentWordData, level: newLevel };
+        chrome.runtime.sendMessage({ action: "editWord", wordId: currentWordId, updatedData }, () => {
+          getRandomWord(displayFlashcard);
+        });
+      }
     }
-  }
-});
-
-// Save the adjusted level
-document.querySelector("#saveLevelButton").addEventListener("click", () => {
-  const newLevel = parseInt(document.querySelector("#levelAdjust").value, 10);
-
-  if (currentWordId && currentWordData) {
-    const updatedData = { ...currentWordData, level: newLevel };
-    chrome.runtime.sendMessage({ action: "editWord", wordId: currentWordId, updatedData }, () => {
-      alert("Level updated successfully!");
-    });
   }
 });
 
@@ -85,4 +134,3 @@ document.querySelector("#saveLevelButton").addEventListener("click", () => {
 document.addEventListener("DOMContentLoaded", () => {
   getRandomWord(displayFlashcard);
 });
-

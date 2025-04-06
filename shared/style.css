@@ -79,3 +79,24 @@ body {
   margin-top: 20px; /* Add some space above the word */
   display: none; /* Ensure it is hidden by default */
 }
+
+#levelTable {
+  width: 100%;
+  text-align: center;
+  margin: 10px 0;
+}
+
+.level-box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #f9f9f9;
+}
+
+.level-box:hover {
+  background-color: #e0e0e0;
+}
+
+.level-box.selected {
+  background-color: #d3d3d3; /* Shaded grey for the selected level */
+}

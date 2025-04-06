@@ -14,5 +14,5 @@ function processInputWords(input) {
         .filter(word => word.trim() !== ""); // Remove empty strings
 }
 
-// Export the utility function
+// Export the utility functions
 export { processInputWords };
