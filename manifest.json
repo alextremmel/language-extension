@@ -1,27 +1,48 @@
 {
   "manifest_version": 3,
-  "name": "Word Highlighter",
+  "name": "Language Extension",
   "version": "1.0",
-  "description": "Highlights words with different levels, stored locally.",
-  "permissions": ["storage"],
-  "host_permissions": ["<all_urls>"],
-  "action": {
-    "default_popup": "popup.html"
+  "description": "Highlights specific words or sentences on web pages based on a user-defined list.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
+      "css": ["shared/highlight.css"],
       "js": ["content.js"],
-      "css": ["styles.css"],
-      "run_at": "document_idle"
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["words.html"],
+      "resources": [
+        "shared/wordUtils.js",
+        "shared/highlight.css",
+        "webpage/index.html",
+        "webpage/flashcards.html",
+        "webpage/flashcards.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
+  "action": {
+    "default_popup": "webpage/index.html",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
   "icons": {
     "16": "icon.png",
     "48": "icon.png",

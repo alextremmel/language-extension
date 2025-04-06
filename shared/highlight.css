@@ -1,0 +1,27 @@
+.highlighted-word {
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: calc(100% - 2px) 3px;
+  padding-bottom: 1px; /* spacing between text and underline */
+}
+
+/* Colors by level */
+.highlight-level-1 {
+  background-image: linear-gradient(to right, rgba(0, 216, 0, 0.8), rgba(0, 216, 0, 0.8));
+}
+
+.highlight-level-2 {
+  background-image: linear-gradient(to right, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.8));
+}
+
+.highlight-level-3 {
+  background-image: linear-gradient(to right, rgba(255, 149, 0, 0.8), rgba(255, 149, 0, 0.8));
+}
+
+.highlight-level-4 {
+  background-image: linear-gradient(to right, rgba(255, 0, 0, 0.8), rgba(255, 0, 0, 0.8));
+}
+
+.highlight-level-5 {
+  background-image: linear-gradient(to right, rgba(79, 135, 255, 0.8), rgba(79, 135, 255, 0.8));
+}

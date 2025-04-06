@@ -1,7 +1,5 @@
-when filtering words, should also search within related words
-make the highlights show up on every word and website
-be able to add spaces to words like 이 so it only gets highlighted when it is by itself, not in a word
-seperate the highlights so that you can see the seperation even when two highlighted words are next to eachother
-make it so that words can be grouped together to make sentences in the list.
-should have base words, even 는, 에, 가, that can be added together to make sentences
-incentivise making longer sentences of known words
+make a better level selector
+make a page similar to test.html where the user can add a story and save the story
+make performance better on websites (remove waiting for javascript to load)
+add a quick way to turn highlights off on a website
+general optimizations

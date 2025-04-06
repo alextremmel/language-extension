@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flashcards</title>
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <header>
+    <a href="index.html" id="goToWordListLink">Go to Word List</a>
+  </header>
+
+  <h1>Flashcards</h1>
+  <div id="flashcard">
+    <p id="definition">Click "Next" to start!</p>
+    <!-- Added autocomplete="off" to prevent suggestions -->
+    <input type="text" id="wordInput" placeholder="Type your guess here" autocomplete="off" />
+    <p id="word" style="display: none;"></p>
+  </div>
+  <div id="controls" style="display: none;">
+    <!-- Added a paragraph to display the current level -->
+    <p id="currentLevel">Current Level: </p>
+    <label>
+      Adjust Level:
+      <select id="levelAdjust">
+        <option value="1">1 (Easy)</option>
+        <option value="2">2 (Medium)</option>
+        <option value="3">3 (Hard)</option>
+        <option value="4">4 (Very Hard)</option>
+        <option value="5">5 (Proper Noun)</option>
+      </select>
+    </label>
+    <button id="saveLevelButton">Save Level</button>
+  </div>
+  <button id="nextButton" style="display: none;">Next</button>
+  <script type="module" src="flashcards.js"></script>
+</body>
+</html>

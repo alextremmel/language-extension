@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Word List</title>
+  <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+  <header>
+    <a href="flashcards.html" id="goToFlashcardsLink">Go to Flashcards</a>
+  </header>
+
+  <h1>Word List</h1>
+
+  <!-- Simplified form for adding/editing words -->
+  <form id="wordForm" autocomplete="off">
+    <input type="hidden" id="wordId" value="">
+    <label>
+      Word:
+      <input type="text" id="wordInput" required autocomplete="off">
+    </label>
+    <label>
+      Definition:
+      <input type="text" id="definitionInput" required autocomplete="off">
+    </label>
+    <label>
+      Language:
+      <select id="languageInput" required>
+        <option value="">Any Language</option>
+        <option value="Korean">Korean</option>
+        <option value="English">English</option>
+        <option value="Chinese">Chinese</option>
+      </select>
+    </label>
+    <label>
+      Level:
+      <select id="levelInput" required>
+        <option value="">Any Level</option>
+        <option value="1">1 (Easy)</option>
+        <option value="2">2 (Medium)</option>
+        <option value="3">3 (Hard)</option>
+        <option value="4">4 (Very Hard)</option>
+        <option value="5">5 (Proper Noun)</option>
+      </select>
+    </label>
+    <button type="submit" id="saveWordButton">Save Word</button>
+  </form>
+
+  <!-- Table for displaying the word list -->
+  <table id="wordTable">
+    <thead>
+      <tr>
+        <th>Word</th>
+        <th>Definition</th>
+        <th>Language</th>
+        <th>Lvl</th>
+        <th>Date Added</th>
+        <th class="actions-column">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <script type="module" src="webpage.js"></script>
+</body>
+</html>
