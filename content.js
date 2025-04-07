@@ -3,7 +3,7 @@ let currentWordList = {};
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === "highlightWords") {
     currentWordList = processWordList(message.wordList); // Process the word list
-    highlightWords(currentWordList);
+    debouncedApplyHighlighting();
   }
 });
 
@@ -71,7 +71,7 @@ function highlightWords(wordList) {
     const matches = [...originalText.matchAll(pattern)];
 
     if (matches.length > 0) {
-      const fragments = [];
+      const fragment = document.createDocumentFragment();
       let lastIndex = 0;
 
       matches.forEach(match => {
@@ -80,7 +80,7 @@ function highlightWords(wordList) {
 
         // Add the text before the match
         if (matchStart > lastIndex) {
-          fragments.push(document.createTextNode(originalText.slice(lastIndex, matchStart)));
+          fragment.appendChild(document.createTextNode(originalText.slice(lastIndex, matchStart)));
         }
 
         // Add the highlighted match
@@ -90,25 +90,8 @@ function highlightWords(wordList) {
           span.className = `highlighted-word highlight-level-${wordData.level}`;
           span.title = wordData.definition;
 
-          // Only highlight the actual word, not the surrounding spaces
-          const matchText = match[0];
-          const trimmedMatch = matchText.trim(); // Remove spaces from the match
-          const leadingSpaces = matchText.slice(0, matchText.indexOf(trimmedMatch));
-          const trailingSpaces = matchText.slice(matchText.indexOf(trimmedMatch) + trimmedMatch.length);
-
-          // Add leading spaces as plain text
-          if (leadingSpaces) {
-            fragments.push(document.createTextNode(leadingSpaces));
-          }
-
-          // Add the highlighted word
-          span.textContent = trimmedMatch;
-          fragments.push(span);
-
-          // Add trailing spaces as plain text
-          if (trailingSpaces) {
-            fragments.push(document.createTextNode(trailingSpaces));
-          }
+          span.textContent = match[0];
+          fragment.appendChild(span);
         }
 
         lastIndex = matchEnd;
@@ -116,19 +99,32 @@ function highlightWords(wordList) {
 
       // Add the remaining text after the last match
       if (lastIndex < originalText.length) {
-        fragments.push(document.createTextNode(originalText.slice(lastIndex)));
+        fragment.appendChild(document.createTextNode(originalText.slice(lastIndex)));
       }
 
-      // Replace the original text node with the fragments
+      // Replace the original text node with the fragment
       const parent = node.parentNode;
-      fragments.forEach(fragment => parent.insertBefore(fragment, node));
-      parent.removeChild(node);
+      parent.replaceChild(fragment, node);
     }
   });
 }
 
-function applyHighlighting(root = document.body) {
+// Debounced function to reduce redundant highlighting calls
+const debouncedApplyHighlighting = debounce(() => {
   highlightWords(currentWordList);
+}, 300);
+
+function applyHighlighting(root = document.body) {
+  debouncedApplyHighlighting();
+}
+
+// Debounce utility function
+function debounce(func, delay) {
+  let timeout;
+  return function (...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), delay);
+  };
 }
 
 // Set up a MutationObserver to watch for added nodes and apply highlighting to dynamic content

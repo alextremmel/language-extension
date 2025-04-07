@@ -6,13 +6,13 @@
  */
 function processInputWords(input) {
     const trimmedInput = input.trim();
-    if (trimmedInput === "") {
-        return []; // Return an empty array if the input is empty
+    if (!trimmedInput) {
+      return []; // Return an empty array if the input is empty
     }
     return trimmedInput
-        .split(/\s+/) // Split into words
-        .filter(word => word.trim() !== ""); // Remove empty strings
-}
-
-// Export the utility functions
-export { processInputWords };
+      .split(/\s+/) // Split into words
+      .filter(word => word.trim() !== ""); // Remove empty strings
+  }
+  
+  // Export the utility functions
+  export { processInputWords };
