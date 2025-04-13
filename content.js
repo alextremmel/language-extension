@@ -48,7 +48,10 @@ function highlightWords(wordList) {
       acceptNode: function(node) {
         if (node.parentNode) {
           const tagName = node.parentNode.nodeName;
-          if (["SCRIPT", "STYLE", "NOSCRIPT", "IFRAME", "OBJECT", "EMBED", "TEXTAREA"].includes(tagName)) {
+          if (["SCRIPT", "STYLE", "NOSCRIPT", "IFRAME", "OBJECT", "EMBED", "TEXTAREA", "INPUT"].includes(tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (node.parentNode.isContentEditable) {
             return NodeFilter.FILTER_REJECT;
           }
         }
