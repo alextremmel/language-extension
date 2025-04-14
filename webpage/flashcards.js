@@ -23,7 +23,7 @@ function getRandomWord(callback) {
       let weight;
       switch (wordData.level) {
         case 1:
-          weight = 1; // Rarely include level 1 words
+          weight = 0; // Rarely include level 1 words
           break;
         case 2:
           weight = 4; // Moderate weight for level 2
