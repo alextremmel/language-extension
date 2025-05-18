@@ -19,7 +19,7 @@
     {
       "matches": ["<all_urls>"],
       "css": ["shared/highlight.css"],
-      "js": ["content.js"],
+      "js": ["shared/highlight.js", "content.js"],
       "run_at": "document_end"
     }
   ],
@@ -28,9 +28,15 @@
       "resources": [
         "shared/wordUtils.js",
         "shared/highlight.css",
+        "shared/highlight.js",
         "webpage/index.html",
         "webpage/flashcards.html",
-        "webpage/flashcards.js"
+        "webpage/flashcards.js",
+        "webpage/story.html",
+        "webpage/story.js",
+        "webpage/storiesList.html",
+        "webpage/storiesList.js",
+        "webpage/webpage.js"
       ],
       "matches": ["<all_urls>"]
     }
