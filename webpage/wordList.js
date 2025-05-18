@@ -1,24 +1,17 @@
 // webpage/wordList.js
-
-// Import the reusable function for creating the level distribution bar
 import { createLevelDistributionBarHTML } from '../shared/uiUtils.js';
+import { availableLanguages } from '../shared/config.js';
 
-let allFetchedWords = {}; // Stores all words fetched from storage to allow client-side filtering for the distribution bar
+let allFetchedWords = {}; // Stores all words fetched from storage
 
 // --- Functions for Word Distribution Bar ---
-
-/**
- * Calculates the distribution of word levels from a given array of word objects.
- * @param {Array<Object>} wordsArray - An array of word objects (e.g., [{word: "...", level: 1, language: "..."}]).
- * @returns {Object} An object representing the distribution (e.g., {"1": 50, "2": 25, "unknown": 25}).
- */
 function calculateOverallWordDistribution(wordsArray) {
     const counts = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 };
     let totalWordsWithLevels = 0;
 
     if (wordsArray && Array.isArray(wordsArray)) {
         wordsArray.forEach(wordData => {
-            if (wordData && wordData.level) { // Ensure level exists and is valid
+            if (wordData && wordData.level) {
                 const levelStr = String(wordData.level);
                 if (counts.hasOwnProperty(levelStr)) {
                     counts[levelStr]++;
@@ -30,18 +23,13 @@ function calculateOverallWordDistribution(wordsArray) {
 
     const distribution = {};
     if (totalWordsWithLevels === 0) {
-        // If no words match or no words have levels, show as 100% unknown
         return { "1":0, "2":0, "3":0, "4":0, "5":0, "unknown": 100 };
     }
 
-    // Calculate percentages
     for (const levelKey in counts) {
         distribution[levelKey] = (counts[levelKey] / totalWordsWithLevels) * 100;
     }
-
-    // Optional: Sophisticated rounding to ensure sum is exactly 100%
-    // This basic rounding should be sufficient for visualization.
-    // The createLevelDistributionBarHTML function also has scaling for visual fit.
+    
     let roundedSum = 0;
     Object.keys(distribution).forEach(key => {
         distribution[key] = Math.round(distribution[key]);
@@ -50,30 +38,25 @@ function calculateOverallWordDistribution(wordsArray) {
 
     if (roundedSum !== 100 && totalWordsWithLevels > 0) {
         let diff = 100 - roundedSum;
-        // Attempt to adjust the largest component to make sum 100
-        // Filters out levels with 0 count before finding max, to avoid issues if some levels are empty.
         const nonEmptyLevels = Object.keys(counts).filter(k => counts[k] > 0);
         if (nonEmptyLevels.length > 0) {
             let maxLevel = nonEmptyLevels.reduce((a, b) => counts[a] > counts[b] ? a : b);
             distribution[maxLevel] += diff;
-        } else if (distribution["unknown"] !== undefined) { // if all known levels were 0, adjust unknown
-             distribution["unknown"] += diff; // This case should ideally not be hit if totalWordsWithLevels > 0
+        } else if (distribution["unknown"] !== undefined) {
+             distribution["unknown"] += diff;
         }
     }
     return distribution;
 }
 
-/**
- * Updates the word distribution bar display based on the currently selected language filter.
- */
 function updateWordDistributionDisplay() {
     const languageFilterElement = document.getElementById('distributionLanguageFilter');
-    if (!languageFilterElement) return; // Safety check
+    if (!languageFilterElement) return;
 
     const selectedLanguage = languageFilterElement.value;
-    let wordsForDistribution = Object.values(allFetchedWords); // Use an array copy
+    let wordsForDistribution = Object.values(allFetchedWords);
 
-    if (selectedLanguage) { // If a specific language is selected (not "Any Language")
+    if (selectedLanguage) { // If a specific language is selected (not "Any Language" which has value "")
         wordsForDistribution = wordsForDistribution.filter(word => word.language === selectedLanguage);
     }
 
@@ -82,23 +65,45 @@ function updateWordDistributionDisplay() {
 
     if (barPlaceholder) {
         barPlaceholder.innerHTML = createLevelDistributionBarHTML(overallDistributionData, {
-            width: "100%", // Bar will take full width of its placeholder
-            height: "20px",  // Define a fixed height for the bar
+            width: "100%",
+            height: "20px",
             defaultTitle: `Word Distribution (${selectedLanguage || 'Any Language'})`
         });
     }
 }
 
-// --- Existing Word List Functions ---
+function populateLanguageDropdowns() {
+    const dropdownConfigs = [
+        { selector: "#distributionLanguageFilter", defaultText: "Any Language", defaultValue: "" },
+        { selector: "#languageInput", defaultText: "Any Language", defaultValue: "" }
+    ];
 
+    dropdownConfigs.forEach(config => {
+        const dropdown = document.querySelector(config.selector);
+        if (dropdown) {
+            dropdown.innerHTML = ''; // Clear existing options
+
+            const defaultOption = document.createElement('option');
+            defaultOption.value = config.defaultValue;
+            defaultOption.textContent = config.defaultText;
+            dropdown.appendChild(defaultOption);
+
+            availableLanguages.forEach(lang => {
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                dropdown.appendChild(option);
+            });
+        }
+    });
+}
+
+// --- Existing Word List Functions ---
 function populateTable(words) {
   const tableBody = document.querySelector("#wordTable tbody");
-  tableBody.innerHTML = ""; // Clear existing rows
+  tableBody.innerHTML = "";
 
-  // If 'words' is an object (from initial fetch), convert to array.
-  // If it's already an array (e.g., from a filter operation that returns array), use as is.
   const wordsArray = Array.isArray(words) ? words : Object.values(words);
-
 
   if (wordsArray.length === 0) {
     const colSpan = document.querySelector("#wordTable thead tr").cells.length;
@@ -106,26 +111,25 @@ function populateTable(words) {
     return;
   }
 
-
-  wordsArray.forEach((wordData) => { // Assuming wordData has an 'id' if it's from Object.entries
-    // If words is an object, it would be Object.entries(words).forEach(([id, wordData])
-    // For consistency, let's assume populateTable now receives an array of word objects,
-    // where each object might need an 'id' if row.dataset.id is used.
-    // For now, we'll assume wordData contains all necessary fields.
-    // If wordData doesn't have an id from Object.values(), you'll need a unique key if row.dataset.id is critical.
-    // Let's find the ID if allFetchedWords contains this wordData object
-    let id;
+  wordsArray.forEach((wordData) => {
+    let id; // Find or generate ID for the row
     for (const key in allFetchedWords) {
-        if (allFetchedWords[key] === wordData) {
-            id = key;
+        if (allFetchedWords[key] === wordData) { // This comparison might be tricky if objects are cloned
+            // A better way is if wordData itself contains its original ID from storage
+            // For now, assuming wordData might be a direct reference or we use word + date as a pseudo-key
+            id = key; // This assumes allFetchedWords uses IDs that are useful as dataset.id
             break;
         }
     }
-    if (!id) id = wordData.word + Date.now(); // Fallback unique key, less ideal.
+    // If wordData has an 'id' property (e.g. if words are {id: '...', word: '...', ...}) use it.
+    // This example uses the key from allFetchedWords if found, or generates one.
+    if (!id && wordData.id) id = wordData.id; // Prefer an ID if the word object itself has one
+    if (!id) id = wordData.word + (wordData.dateAdded || Date.now()); // Fallback, less ideal for stable IDs
+
 
     const row = document.createElement("tr");
     row.classList.add("clickableRow");
-    row.dataset.id = id; // Ensure 'id' is available
+    row.dataset.id = id;
 
     row.innerHTML = `
       <td>${wordData.word}</td>
@@ -142,16 +146,19 @@ function populateTable(words) {
 }
 
 function handleEdit(wordId) {
-  chrome.runtime.sendMessage({ action: "getWords" }, (response) => {
-    const wordData = response[wordId]; // response here is the object of all words
-    if (wordData) {
-      document.querySelector("#wordId").value = wordId;
-      document.querySelector("#wordInput").value = wordData.word;
-      document.querySelector("#definitionInput").value = wordData.definition;
-      document.querySelector("#languageInput").value = wordData.language;
-      document.querySelector("#levelInput").value = wordData.level;
-    }
-  });
+  // To reliably get wordData, we need its ID as stored in chrome.storage (which are the keys of allFetchedWords)
+  // The row.dataset.id should correspond to these keys.
+  const wordData = allFetchedWords[wordId];
+  if (wordData) {
+    document.querySelector("#wordId").value = wordId; // Store the actual ID
+    document.querySelector("#wordInput").value = wordData.word;
+    document.querySelector("#definitionInput").value = wordData.definition;
+    document.querySelector("#languageInput").value = wordData.language;
+    document.querySelector("#levelInput").value = wordData.level;
+  } else {
+      console.error("Word data not found for ID:", wordId, "Available IDs:", Object.keys(allFetchedWords));
+      // Fallback or alert user if needed
+  }
 }
 
 function handleDelete(wordId, wordText) {
@@ -159,7 +166,7 @@ function handleDelete(wordId, wordText) {
   if (!confirmed) {
     return;
   }
-
+  // wordId here *must* be the key used in chrome.storage.local
   chrome.runtime.sendMessage({ action: "deleteWord", wordId }, () => {
     fetchWords(); // Refresh table and distribution bar
   });
@@ -168,13 +175,14 @@ function handleDelete(wordId, wordText) {
 function fetchWords() {
   chrome.runtime.sendMessage({ action: "getWords" }, (response) => {
     if (response) {
-      allFetchedWords = response; // Store all words (as an object)
-      // Initial table population (populateTable might need to handle object or array)
-      // filterWordTable will apply current table filters and call populateTable with filtered array
+      allFetchedWords = response;
       filterWordTable(); // This will populate the table based on existing filters
-      updateWordDistributionDisplay(); // Update the distribution bar
+      updateWordDistributionDisplay();
     } else {
       console.error("Failed to fetch words");
+      allFetchedWords = {}; // Ensure it's an object
+      filterWordTable(); // Still try to update table (will show 'no words')
+      updateWordDistributionDisplay(); // Update bar (will show unknown)
     }
   });
 }
@@ -182,101 +190,107 @@ function fetchWords() {
 document.querySelector("#wordForm").addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const wordId = document.querySelector("#wordId").value;
+  const wordId = document.querySelector("#wordId").value; // This will be the actual key if editing
   const wordData = {
     word: document.querySelector("#wordInput").value,
     definition: document.querySelector("#definitionInput").value,
     language: document.querySelector("#languageInput").value,
     level: parseInt(document.querySelector("#levelInput").value, 10),
+    // dateAdded will be set by background.js for new words, or preserved for edits
   };
 
-  if (!wordData.language || !wordData.level) {
-    alert("Please select a valid language and level.");
+  if (!wordData.language) { // languageInput value is "" if "Any Language" selected
+    alert("Please select a specific language for the word.");
     return;
+  }
+  if (!wordData.level || isNaN(wordData.level)) {
+     alert("Please select a valid level for the word.");
+     return;
   }
 
   const action = wordId ? "editWord" : "addWord";
   const message = wordId ? { action, wordId, updatedData: wordData } : { action, wordData };
 
-  chrome.runtime.sendMessage(message, () => {
-    fetchWords(); // Refresh table and distribution bar
-    resetFormOnSubmit(); // Modified name for clarity
+  chrome.runtime.sendMessage(message, (response) => {
+    if (response && response.error) {
+        alert("Error: " + response.error);
+    } else {
+        fetchWords();
+        resetFormOnSubmit();
+    }
   });
 });
 
-function resetFormOnSubmit() { // Renamed from resetForm to avoid conflict if there's another resetForm
+function resetFormOnSubmit() {
   document.querySelector("#wordForm").reset();
   document.querySelector("#wordId").value = "";
-  // After resetting, re-apply filters for the table which might get cleared by form reset
-  // Do not call filterWordTable() here if it re-populates from allFetchedWords without considering form inputs for filtering
-  // The main filterWordTable in fetchWords should handle this.
-  // Or, if filterWordTable is lightweight and just hides rows:
-  // filterWordTable();
+  // After resetting, the language and level dropdowns go to "Any Language"/"Any Level".
+  // Filter the table to reflect this.
+  filterWordTable();
 }
 
 
 function filterWordTable() {
-  // This function filters the TABLE VIEW based on the FORM inputs
-  // It does NOT affect allFetchedWords or the distribution bar filter
-  const wordInput = document.querySelector("#wordInput").value.toLowerCase().trim();
-  const filterLanguage = document.querySelector("#languageInput").value; // Language from the main form
-  const filterLevel = document.querySelector("#levelInput").value; // Level from the main form
+  const wordInputFilter = document.querySelector("#wordInput").value.toLowerCase().trim();
+  const languageFilter = document.querySelector("#languageInput").value; // Language from the main form for filtering
+  const levelFilter = document.querySelector("#levelInput").value;     // Level from the main form for filtering
 
   let wordsToDisplayInTable = Object.values(allFetchedWords);
 
-  // Filter by wordInput only if it's not empty AND not in edit mode
-  if (wordInput && !document.querySelector("#wordId").value) {
+  // Apply word text filter only if it's not empty AND not in edit mode
+  if (wordInputFilter && !document.querySelector("#wordId").value) {
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
-          wordData.word.toLowerCase().includes(wordInput)
+          wordData.word.toLowerCase().includes(wordInputFilter)
       );
   }
-  if (filterLanguage) {
+  // Apply language filter (if a specific language is selected)
+  if (languageFilter) { // True if not ""
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
-          wordData.language === filterLanguage
+          wordData.language === languageFilter
       );
   }
-  if (filterLevel) {
+  // Apply level filter (if a specific level is selected)
+  if (levelFilter) { // True if not ""
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
-          String(wordData.level) === filterLevel
+          String(wordData.level) === levelFilter
       );
   }
-  populateTable(wordsToDisplayInTable); // Populate table with the filtered array
+  populateTable(wordsToDisplayInTable);
 }
 
 
 // --- Event Listeners ---
-
 document.addEventListener("DOMContentLoaded", () => {
-    fetchWords(); // Initial fetch for words, table, and distribution bar
+    populateLanguageDropdowns(); // Populate language dropdowns
+    fetchWords(); // Initial fetch
 
     const distributionLangFilter = document.getElementById('distributionLanguageFilter');
     if (distributionLangFilter) {
         distributionLangFilter.addEventListener('change', updateWordDistributionDisplay);
     }
 
-    // Event listener for the table body (event delegation for delete/edit)
     document.querySelector("#wordTable tbody").addEventListener("click", (event) => {
         const target = event.target;
+        const row = target.closest(".clickableRow"); // Get the closest row for context
+
         if (target.classList.contains("deleteButton")) {
-            const wordId = target.dataset.id;
-            const wordText = target.closest("tr").querySelector("td:nth-child(1)").textContent;
+            const wordId = target.dataset.id; // ID of the word to delete
+            const wordText = row ? row.querySelector("td:nth-child(1)").textContent : "this word";
             handleDelete(wordId, wordText);
-        } else if (target.closest(".clickableRow")) {
-            if (!target.closest("button")) { // Ensure not clicking a button inside the row
-                const row = target.closest(".clickableRow");
-                const wordId = row.dataset.id;
+        } else if (row) { // If a row was clicked (but not a button inside it)
+            if (!target.closest("button")) {
+                const wordId = row.dataset.id; // ID of the word to edit
                 handleEdit(wordId);
             }
         }
     });
 
-    // Listen for changes on the main form's filter inputs to update the table view
+    // Form input listeners for live filtering of the table
     document.querySelector("#wordInput").addEventListener("input", () => {
-        // Only filter if not in edit mode (wordId is empty)
-        if (!document.querySelector("#wordId").value) {
+        if (!document.querySelector("#wordId").value) { // Only filter if not in edit mode
             filterWordTable();
         }
     });
-    document.querySelector("#languageInput").addEventListener("change", filterWordTable); // Main form language
-    document.querySelector("#levelInput").addEventListener("change", filterWordTable); // Main form level
+    document.querySelector("#languageInput").addEventListener("change", filterWordTable);
+    document.querySelector("#levelInput").addEventListener("change", filterWordTable);
 });
