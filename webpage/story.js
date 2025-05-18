@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadStoryView() {
     chrome.storage.local.get(["stories", "words"], (data) => {
         if (chrome.runtime.lastError) {
-            console.error('Error fetching from storage in loadStoryView:', chrome.runtime.lastError);
+            console.error('Error fetching from storage in loadStoryView:', chrome.runtime.lastError.message);
             const container = document.getElementById("storyContainer");
             if (container) container.innerHTML = "<p>Error loading story data.</p>";
             return;
@@ -65,7 +65,6 @@ function loadStoryView() {
             });
         }
 
-        // Ensure highlighting functions are available (shared/highlight.js should be loaded first)
         if (typeof processWordList === 'function' && typeof highlightWords === 'function') {
             const wordListToProcess = data.words || {};
             const processedWordList = processWordList(wordListToProcess);
@@ -88,7 +87,7 @@ function deleteStory() {
         delete stories[storyId];
         chrome.storage.local.set({ stories }, () => {
             if (chrome.runtime.lastError) {
-                console.error('Error deleting story from storage:', chrome.runtime.lastError);
+                console.error('Error deleting story from storage:', chrome.runtime.lastError.message);
             } else {
                 window.location.href = "storiesList.html";
             }
@@ -101,7 +100,7 @@ function loadStoryForm(formMode) {
     if (formMode === "edit") {
         chrome.storage.local.get("stories", (data) => {
             if (chrome.runtime.lastError) {
-                console.error('Error fetching stories for edit form:', chrome.runtime.lastError);
+                console.error('Error fetching stories for edit form:', chrome.runtime.lastError.message);
                 return;
             }
             const stories = data.stories || {};
@@ -192,7 +191,7 @@ function saveStory(formMode) {
 
     chrome.storage.local.get(["stories", "words"], (data) => {
         if (chrome.runtime.lastError) {
-            console.error('Error fetching data for saving story:', chrome.runtime.lastError);
+            console.error('Error fetching data for saving story:', chrome.runtime.lastError.message);
             return;
         }
         const stories = data.stories || {};
@@ -201,22 +200,29 @@ function saveStory(formMode) {
         const levelDistribution = computeLevelDistribution(content, userWords);
         const newStoryData = { title, language, content, levelDistribution };
 
+        let currentId = storyId; // Use existing storyId for edits
         if (formMode === "create") {
             const duplicate = Object.values(stories).find(story => story.title.toLowerCase() === title.toLowerCase());
             if (duplicate) {
                 alert("A story with this title already exists.");
                 return;
             }
-            const newId = Date.now().toString();
-            stories[newId] = newStoryData;
-        } else if (formMode === "edit") {
-            stories[storyId] = { ...stories[storyId], ...newStoryData };
+            currentId = Date.now().toString(); // Generate new ID for new stories
+            stories[currentId] = newStoryData;
+        } else if (formMode === "edit" && stories[currentId]) {
+            stories[currentId] = { ...stories[currentId], ...newStoryData };
+        } else if (formMode === "edit" && !stories[currentId]) {
+            console.error("Attempted to edit a story that does not exist:", currentId);
+            alert("Error: Story to edit was not found.");
+            return;
         }
+
         chrome.storage.local.set({ stories }, () => {
             if (chrome.runtime.lastError) {
-                console.error('Error setting stories in storage after save:', chrome.runtime.lastError);
+                console.error('Error setting stories in storage after save:', chrome.runtime.lastError.message);
             } else {
-                window.location.href = "storiesList.html";
+                // Redirect to view mode for the story just saved/created
+                window.location.href = `story.html?mode=view&storyId=${currentId}`;
             }
         });
     });
@@ -224,7 +230,7 @@ function saveStory(formMode) {
 
 function computeLevelDistribution(text, userWords) {
     if (!text || typeof text !== 'string') {
-        return { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, unknown: 100 }; // Default if no text
+        return { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, unknown: 100 };
     }
     const words = text.trim().split(/\s+/);
     const counts = { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0, unknown: 0 };
@@ -235,22 +241,32 @@ function computeLevelDistribution(text, userWords) {
 
         let matched = false;
         if (userWords && typeof userWords === 'object') {
-            Object.values(userWords).forEach(entry => {
+            for (const entry of Object.values(userWords)) {
                 if (entry && entry.word && entry.word.toLowerCase() === lowerWord) {
-                    counts[entry.level] = (counts[entry.level] || 0) + 1;
+                    counts[entry.level.toString()] = (counts[entry.level.toString()] || 0) + 1;
                     matched = true;
+                    break; 
                 }
-            });
+            }
         }
         if (!matched) {
             counts.unknown = (counts.unknown || 0) + 1;
         }
     });
 
-    const total = words.length > 0 ? words.length : 1;
+    const totalWords = words.filter(word => word.replace(/[.,!?;:"“”']/g, '').trim() !== "").length;
     const distribution = {};
+
+    if (totalWords === 0) { // Handle case with no processable words
+        for (let key in counts) {
+            distribution[key] = 0;
+        }
+        distribution.unknown = 100; // Or 0, depending on desired representation
+        return distribution;
+    }
+
     for (let key in counts) {
-        distribution[key] = Math.round((counts[key] / total) * 100);
+        distribution[key] = Math.round((counts[key] / totalWords) * 100);
     }
     return distribution;
 }

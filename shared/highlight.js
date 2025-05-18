@@ -11,7 +11,6 @@ function processWordList(wordList) {
     Object.entries(wordList).forEach(([key, value]) => {
       processedList[key] = {
         ...value,
-        // Ensure 'value' and 'value.word' are not null/undefined before calling replace
         word: value && value.word ? value.word.replace(/_/g, " ") : ""
       };
     });
@@ -25,7 +24,7 @@ function processWordList(wordList) {
  * @returns {string} - The string with special characters escaped.
  */
 function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -35,18 +34,15 @@ function escapeRegExp(string) {
  */
 function highlightWords(wordList, root = document.body) {
   if (!root) {
-    // console.error('highlightWords - Root element is null or undefined.'); // Optional: keep critical errors
     return;
   }
   if (!wordList || Object.keys(wordList).length === 0) {
-    // console.warn('highlightWords - Word list is empty or undefined.'); // Optional: keep critical warnings
     return;
   }
 
   const wordsArray = Object.values(wordList).filter(item => item && typeof item.word === 'string' && item.word.trim() !== '');
 
   if (wordsArray.length === 0) {
-      // console.warn('highlightWords - No valid words to highlight after filtering.'); // Optional
       return;
   }
 
@@ -122,7 +118,6 @@ function highlightWords(wordList, root = document.body) {
           span.textContent = matchedWordText;
           fragment.appendChild(span);
         } else {
-          // Fallback, though should ideally not be reached if wordMap is correct
           fragment.appendChild(document.createTextNode(matchedWordText));
         }
         lastIndex = matchEnd;

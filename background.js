@@ -6,7 +6,6 @@ let cachedWords = null;
 function refreshCachedWords(callback) {
   chrome.storage.local.get("words", (data) => {
     if (chrome.runtime.lastError) {
-      // console.error("Error fetching words for cache:", chrome.runtime.lastError.message);
       cachedWords = {}; // Default to empty if error
     } else {
       cachedWords = data.words || {};
@@ -30,11 +29,9 @@ chrome.runtime.onStartup.addListener(() => {
   refreshCachedWords();
 });
 
-// Update cache when words are modified (called by add/delete/edit functions)
+// Update cache when words are modified
 function updateLocalCacheAndNotify(newWordsData) {
   cachedWords = newWordsData;
-  // Optionally, you could try to re-highlight all active tabs here,
-  // but it might be too intrusive. Usually, highlights apply on next load/update.
 }
 
 // Add a word to the list
@@ -47,7 +44,6 @@ function addWord(wordData, callback) {
 
     chrome.storage.local.set({ words }, () => {
       if (chrome.runtime.lastError) {
-        // console.error("Error saving word:", chrome.runtime.lastError.message);
         if (callback) callback(null, chrome.runtime.lastError);
         return;
       }
@@ -65,7 +61,6 @@ function deleteWord(wordId, callback) {
       delete words[wordId];
       chrome.storage.local.set({ words }, () => {
         if (chrome.runtime.lastError) {
-          // console.error("Error deleting word:", chrome.runtime.lastError.message);
           if (callback) callback(chrome.runtime.lastError);
           return;
         }
@@ -73,7 +68,7 @@ function deleteWord(wordId, callback) {
         if (callback) callback();
       });
     } else {
-      if (callback) callback(); // Word not found, but not an error for deletion
+      if (callback) callback();
     }
   });
 }
@@ -86,7 +81,6 @@ function editWord(wordId, updatedData, callback) {
       words[wordId] = { ...words[wordId], ...updatedData };
       chrome.storage.local.set({ words }, () => {
         if (chrome.runtime.lastError) {
-          // console.error("Error editing word:", chrome.runtime.lastError.message);
           if (callback) callback(chrome.runtime.lastError);
           return;
         }
@@ -94,7 +88,6 @@ function editWord(wordId, updatedData, callback) {
         if (callback) callback();
       });
     } else {
-      // console.warn("Attempted to edit non-existent word ID:", wordId);
       if (callback) callback(new Error("Word ID not found"));
     }
   });
@@ -105,7 +98,6 @@ function getWords(callback) {
   if (cachedWords !== null) {
     callback(cachedWords);
   } else {
-    // If cache is null (e.g., very first run before onInstalled/onStartup fully completes)
     refreshCachedWords(() => {
       callback(cachedWords);
     });
@@ -149,19 +141,14 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 
 // Send cached words to content scripts when a tab is updated
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  // Ensure the tab has a URL and it's an http/https/file URL before trying to send a message.
   if (changeInfo.status === "complete" && tab && tab.url && (tab.url.startsWith("http") || tab.url.startsWith("file"))) {
     const sendMessageToTab = (words) => {
       chrome.tabs.sendMessage(tabId, { action: "highlightWords", wordList: words }, (response) => {
         if (chrome.runtime.lastError) {
-          // This error is common and often means the content script isn't on the page
-          // or ready (e.g., special browser pages, extension just reloaded).
-          // It's "caught" here, so it won't appear as an uncaught promise error in the console.
-          // You can uncomment the log below for debugging if needed.
+          // Error is common, means content script isn't ready or on the page.
           // console.log(`Could not send message to tab ${tabId} (${tab.url}): ${chrome.runtime.lastError.message}`);
         } else {
-          // Optional: Log successful response or handle it
-          // if (response && response.status) console.log(`Message to tab ${tabId} got response: ${response.status}`);
+          // Optional: Log successful response
         }
       });
     };
@@ -169,7 +156,6 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (cachedWords !== null) {
       sendMessageToTab(cachedWords);
     } else {
-      // If cache is somehow not ready, fetch from storage first.
       refreshCachedWords(() => {
         sendMessageToTab(cachedWords);
       });
