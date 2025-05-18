@@ -1,5 +1,0 @@
-make a better level selector
-make a page similar to test.html where the user can add a story and save the story
-make performance better on websites (remove waiting for javascript to load)
-add a quick way to turn highlights off on a website
-general optimizations

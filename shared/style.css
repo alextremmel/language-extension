@@ -2,56 +2,62 @@ body {
     font-family: Arial, sans-serif;
     margin: 20px;
     color: #333;
-  }
+}
   
-  h1 {
+h1 {
     font-size: 20px;
     margin-bottom: 10px;
-  }
-  
-  /* Simplified form styling */
-  form {
+}
+
+/* Simplified form styling */
+form {
     margin-bottom: 10px;
-  }
+}
   
-  form label {
+form label {
     font-size: 14px;
     margin-right: 10px;
-  }
-  
-  /* Plain and compact table styling */
-  #wordTable {
+}
+
+/* Plain and compact table styling for word and stories tables */
+#wordTable,
+#storiesTable {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
-  }
+}
   
-  #wordTable th,
-  #wordTable td {
+#wordTable th,
+#wordTable td,
+#storiesTable th,
+#storiesTable td {
     border: 1px solid #ccc;
     padding: 4px;
     text-align: left;
-  }
+}
   
-  #wordTable th {
+#wordTable th,
+#storiesTable th {
     background-color: #f9f9f9;
-  }
+}
   
-  #wordTable tr:hover {
+#wordTable tr:hover,
+#storiesTable tr:hover {
     background-color: #eef;
     cursor: pointer;
-  }
+}
   
-  .actions-column {
+.actions-column {
     width: 80px;
-  }
+}
   
-  .actions-column button {
+.actions-column button {
     font-size: 12px;
     padding: 2px 6px;
-  }
-  
-  #flashcard {
+}
+
+/* Flashcard styling */
+#flashcard {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -59,12 +65,12 @@ body {
     height: 70vh; /* Adjust height to center vertically */
     text-align: center;
 }
-
+  
 #definition {
     font-size: 24px; /* Large text for the definition */
     margin-bottom: 20px; /* Space between definition and input */
 }
-
+  
 #wordInput {
     font-size: 18px; /* Larger font for input */
     padding: 10px;
@@ -72,31 +78,32 @@ body {
     max-width: 400px; /* Limit maximum width */
     text-align: center; /* Center text inside the input */
 }
-
+  
 #word {
-  font-size: 32px; /* Larger font size for the word */
-  font-weight: bold; /* Make the word bold */
-  margin-top: 20px; /* Add some space above the word */
-  display: none; /* Ensure it is hidden by default */
+    font-size: 32px; /* Larger font size for the word */
+    font-weight: bold; /* Make the word bold */
+    margin-top: 20px; /* Add some space above the word */
+    display: none; /* Ensure it is hidden by default */
 }
 
+/* Level table styling */
 #levelTable {
-  width: 100%;
-  text-align: center;
-  margin: 10px 0;
+    width: 100%;
+    text-align: center;
+    margin: 10px 0;
 }
-
+  
 .level-box {
-  border: 1px solid #ccc;
-  padding: 10px;
-  cursor: pointer;
-  background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    cursor: pointer;
+    background-color: #f9f9f9;
 }
-
+  
 .level-box:hover {
-  background-color: #e0e0e0;
+    background-color: #e0e0e0;
 }
-
+  
 .level-box.selected {
-  background-color: #d3d3d3; /* Shaded grey for the selected level */
+    background-color: #d3d3d3; /* Shaded grey for the selected level */
 }

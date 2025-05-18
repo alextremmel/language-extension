@@ -23,7 +23,7 @@ function escapeRegExp(string) {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function highlightWords(wordList) {
+function highlightWords(wordList, root = document.body) {
   const wordsArray = Object.values(wordList);
   if (wordsArray.length === 0) return;
 
@@ -40,9 +40,9 @@ function highlightWords(wordList) {
   const escapedWords = wordsArray.map(item => escapeRegExp(item.word));
   const pattern = new RegExp(escapedWords.join("|"), "gi");
 
-  // Traverse all text nodes in the document
+  // Traverse all text nodes in the given root
   const walker = document.createTreeWalker(
-    document.body,
+    root,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: function(node) {
@@ -92,7 +92,6 @@ function highlightWords(wordList) {
           const span = document.createElement("span");
           span.className = `highlighted-word highlight-level-${wordData.level}`;
           span.title = wordData.definition;
-
           span.textContent = match[0];
           fragment.appendChild(span);
         }
@@ -118,7 +117,7 @@ const debouncedApplyHighlighting = debounce(() => {
 }, 300);
 
 function applyHighlighting(root = document.body) {
-  debouncedApplyHighlighting();
+  highlightWords(currentWordList, root);
 }
 
 // Debounce utility function

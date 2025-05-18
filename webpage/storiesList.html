@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stories List</title>
+    <link rel="stylesheet" href="../shared/style.css">
+</head>
+<body>
+    <header>
+        <a href="flashcards.html" id="goToFlashcardsLink">Go to Flashcards</a>
+        <a href="storiesList.html" id="goToStoriesLink">Go to Stories</a>
+        <a href="index.html" id="goToWordListLink">Go to Word List</a>
+    </header>
+    
+    <h1>Stories List</h1>
+    <button id="createStoryButton">Create New Story</button>
+    <table id="storiesTable">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Language</th>
+                <th>Level</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Story rows will be dynamically added here -->
+        </tbody>
+    </table>
+    
+    <script type="module" src="storiesList.js"></script>
+</body>
+</html>
