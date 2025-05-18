@@ -38,10 +38,6 @@ function loadStoryView() {
                 deleteStory();
             }
         });
-
-        // Highlight words in the story content
-        const wordList = processWordList(data.words || {});
-        highlightWords(wordList, document.getElementById("storyContent"));
     });
 }
 
