@@ -11,7 +11,8 @@ function processWordList(wordList) {
     Object.entries(wordList).forEach(([key, value]) => {
       processedList[key] = {
         ...value,
-        word: value.word ? value.word.replace(/_/g, " ") : "" // Replace underscores with spaces
+        // Ensure 'value' and 'value.word' are not null/undefined before calling replace
+        word: value && value.word ? value.word.replace(/_/g, " ") : ""
       };
     });
   }
@@ -33,35 +34,40 @@ function escapeRegExp(string) {
  * @param {HTMLElement} [root=document.body] - The root element to search for words within.
  */
 function highlightWords(wordList, root = document.body) {
-  const wordsArray = Object.values(wordList);
-  if (wordsArray.length === 0 || !root) return;
+  if (!root) {
+    // console.error('highlightWords - Root element is null or undefined.'); // Optional: keep critical errors
+    return;
+  }
+  if (!wordList || Object.keys(wordList).length === 0) {
+    // console.warn('highlightWords - Word list is empty or undefined.'); // Optional: keep critical warnings
+    return;
+  }
 
-  // Sort words so that longer phrases are matched before shorter ones
-  // This helps prevent issues where a shorter word within a longer phrase gets matched first
+  const wordsArray = Object.values(wordList).filter(item => item && typeof item.word === 'string' && item.word.trim() !== '');
+
+  if (wordsArray.length === 0) {
+      // console.warn('highlightWords - No valid words to highlight after filtering.'); // Optional
+      return;
+  }
+
   wordsArray.sort((a, b) => b.word.length - a.word.length);
 
-  // Create a mapping for case-insensitive matching, storing the original data
   const wordMap = {};
   wordsArray.forEach(item => {
-    if (item.word) { // Ensure word is defined
-        wordMap[item.word.toLowerCase()] = item;
-    }
+    wordMap[item.word.toLowerCase()] = item;
   });
 
-  // Build a regex pattern with global and case-insensitive flags
-  // Only include words that are defined
-  const definedWords = wordsArray.filter(item => item.word).map(item => escapeRegExp(item.word));
-  if (definedWords.length === 0) return; // No words to highlight
+  const escapedWords = wordsArray.map(item => escapeRegExp(item.word));
+  if (escapedWords.length === 0) {
+    return;
+  }
+  const pattern = new RegExp(escapedWords.join("|"), "gi");
 
-  const pattern = new RegExp(definedWords.join("|"), "gi");
-
-  // Traverse all text nodes in the given root element
   const walker = document.createTreeWalker(
     root,
     NodeFilter.SHOW_TEXT,
     {
       acceptNode: function(node) {
-        // Reject nodes within certain tags or contentEditable elements
         if (node.parentNode) {
           const tagName = node.parentNode.nodeName.toUpperCase();
           if (["SCRIPT", "STYLE", "NOSCRIPT", "IFRAME", "OBJECT", "EMBED", "TEXTAREA", "INPUT"].includes(tagName)) {
@@ -70,7 +76,6 @@ function highlightWords(wordList, root = document.body) {
           if (node.parentNode.isContentEditable) {
             return NodeFilter.FILTER_REJECT;
           }
-          // Avoid re-highlighting already highlighted content
           if (node.parentNode.classList && node.parentNode.classList.contains('highlighted-word')) {
             return NodeFilter.FILTER_REJECT;
           }
@@ -87,7 +92,6 @@ function highlightWords(wordList, root = document.body) {
   }
 
   textNodes.forEach(node => {
-    // Skip if the parent is already highlighted (double check for nodes added to fragment)
     if (node.parentNode && node.parentNode.classList && node.parentNode.classList.contains('highlighted-word')) {
         return;
     }
@@ -106,32 +110,28 @@ function highlightWords(wordList, root = document.body) {
         const matchStart = match.index;
         const matchEnd = matchStart + matchedWordText.length;
 
-        // Add the text before the match
         if (matchStart > lastIndex) {
           fragment.appendChild(document.createTextNode(originalText.slice(lastIndex, matchStart)));
         }
 
-        // Add the highlighted match
-        const wordData = wordMap[matchedWordText.toLowerCase()]; // Get data using case-insensitive match
+        const wordData = wordMap[matchedWordText.toLowerCase()];
         if (wordData) {
           const span = document.createElement("span");
           span.className = `highlighted-word highlight-level-${wordData.level}`;
-          span.title = wordData.definition || ""; // Ensure definition is not undefined
-          span.textContent = matchedWordText; // Use the originally cased text from the document
+          span.title = wordData.definition || "";
+          span.textContent = matchedWordText;
           fragment.appendChild(span);
         } else {
-          // Should not happen if wordMap is built correctly, but as a fallback:
+          // Fallback, though should ideally not be reached if wordMap is correct
           fragment.appendChild(document.createTextNode(matchedWordText));
         }
         lastIndex = matchEnd;
       });
 
-      // Add the remaining text after the last match
       if (lastIndex < originalText.length) {
         fragment.appendChild(document.createTextNode(originalText.slice(lastIndex)));
       }
 
-      // Replace the original text node with the fragment containing highlighted parts
       if (node.parentNode) {
         node.parentNode.replaceChild(fragment, node);
       }
