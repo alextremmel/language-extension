@@ -27,6 +27,7 @@
     {
       "resources": [
         "shared/wordUtils.js",
+        "shared/uiUtils.js",
         "shared/highlight.css",
         "shared/highlight.js",
         "webpage/index.html",

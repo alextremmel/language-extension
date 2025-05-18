@@ -4,9 +4,9 @@
   --primary-hover-color: #3a56d4;
   --text-color: #2b2d42; /* Dark blue-gray */
   --light-text-color: #ffffff;
-  --border-color: #e9ecef; /* Very light gray */
+  --border-color: #bcbfc1; /* Very light gray */
   --background-color: #ffffff;
-  --light-background-color: #f8f9fa; /* Off-white */
+  --light-background-color: #dbe0e6; /* Off-white */
   --danger-color: #ef476f; /* Modern pink-red */
   --danger-hover-color: #d64161;
   --secondary-color: #6c757d;
@@ -231,7 +231,7 @@ button.cancelButton:hover, .cancel-button:hover {
 #wordTable td,
 #storiesTable th,
 #storiesTable td {
-  padding: 0.6rem 0.75rem; /* Compact row height */
+  padding: 0.4rem 0.75rem; /* Compact row height */
   text-align: left;
   vertical-align: middle;
   border-bottom: 1px solid var(--border-color);
@@ -250,6 +250,17 @@ button.cancelButton:hover, .cancel-button:hover {
 #wordTable tr:last-child td,
 #storiesTable tr:last-child td {
   border-bottom: none;
+}
+
+#storiesTable th:nth-child(2), /* Targets the "Language" header */
+#storiesTable td:nth-child(2) { /* Targets the "Language" cells */
+  width: 15%;
+}
+
+#storiesTable th:nth-child(3), /* Targets the "Level" header */
+#storiesTable td:nth-child(3) { /* Targets the "Level" cells */
+  width: 15%; /* Example: fixed width */
+  /* Or use a percentage: width: 25%; */
 }
 
 #wordTable tr:hover,
