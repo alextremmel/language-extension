@@ -3,6 +3,7 @@ import { createLevelDistributionBarHTML } from '../shared/uiUtils.js';
 import { availableLanguages } from '../shared/config.js';
 
 let allFetchedWords = {}; // Stores all words fetched from storage
+let currentlyDisplayedWords = []; // Stores the words currently shown in the table for export
 
 // --- Functions for Word Distribution Bar ---
 function calculateOverallWordDistribution(wordsArray) {
@@ -56,7 +57,7 @@ function updateWordDistributionDisplay() {
     const selectedLanguage = languageFilterElement.value;
     let wordsForDistribution = Object.values(allFetchedWords);
 
-    if (selectedLanguage) { // If a specific language is selected (not "Any Language" which has value "")
+    if (selectedLanguage) { 
         wordsForDistribution = wordsForDistribution.filter(word => word.language === selectedLanguage);
     }
 
@@ -81,7 +82,7 @@ function populateLanguageDropdowns() {
     dropdownConfigs.forEach(config => {
         const dropdown = document.querySelector(config.selector);
         if (dropdown) {
-            dropdown.innerHTML = ''; // Clear existing options
+            dropdown.innerHTML = ''; 
 
             const defaultOption = document.createElement('option');
             defaultOption.value = config.defaultValue;
@@ -112,19 +113,15 @@ function populateTable(words) {
   }
 
   wordsArray.forEach((wordData) => {
-    let id; // Find or generate ID for the row
+    let id; 
     for (const key in allFetchedWords) {
-        if (allFetchedWords[key] === wordData) { // This comparison might be tricky if objects are cloned
-            // A better way is if wordData itself contains its original ID from storage
-            // For now, assuming wordData might be a direct reference or we use word + date as a pseudo-key
-            id = key; // This assumes allFetchedWords uses IDs that are useful as dataset.id
+        if (allFetchedWords[key] === wordData) { 
+            id = key; 
             break;
         }
     }
-    // If wordData has an 'id' property (e.g. if words are {id: '...', word: '...', ...}) use it.
-    // This example uses the key from allFetchedWords if found, or generates one.
-    if (!id && wordData.id) id = wordData.id; // Prefer an ID if the word object itself has one
-    if (!id) id = wordData.word + (wordData.dateAdded || Date.now()); // Fallback, less ideal for stable IDs
+    if (!id && wordData.id) id = wordData.id; 
+    if (!id) id = wordData.word + (wordData.dateAdded || Date.now());
 
 
     const row = document.createElement("tr");
@@ -146,18 +143,15 @@ function populateTable(words) {
 }
 
 function handleEdit(wordId) {
-  // To reliably get wordData, we need its ID as stored in chrome.storage (which are the keys of allFetchedWords)
-  // The row.dataset.id should correspond to these keys.
   const wordData = allFetchedWords[wordId];
   if (wordData) {
-    document.querySelector("#wordId").value = wordId; // Store the actual ID
+    document.querySelector("#wordId").value = wordId; 
     document.querySelector("#wordInput").value = wordData.word;
     document.querySelector("#definitionInput").value = wordData.definition;
     document.querySelector("#languageInput").value = wordData.language;
     document.querySelector("#levelInput").value = wordData.level;
   } else {
       console.error("Word data not found for ID:", wordId, "Available IDs:", Object.keys(allFetchedWords));
-      // Fallback or alert user if needed
   }
 }
 
@@ -166,9 +160,8 @@ function handleDelete(wordId, wordText) {
   if (!confirmed) {
     return;
   }
-  // wordId here *must* be the key used in chrome.storage.local
   chrome.runtime.sendMessage({ action: "deleteWord", wordId }, () => {
-    fetchWords(); // Refresh table and distribution bar
+    fetchWords(); 
   });
 }
 
@@ -176,13 +169,13 @@ function fetchWords() {
   chrome.runtime.sendMessage({ action: "getWords" }, (response) => {
     if (response) {
       allFetchedWords = response;
-      filterWordTable(); // This will populate the table based on existing filters
+      filterWordTable(); 
       updateWordDistributionDisplay();
     } else {
       console.error("Failed to fetch words");
-      allFetchedWords = {}; // Ensure it's an object
-      filterWordTable(); // Still try to update table (will show 'no words')
-      updateWordDistributionDisplay(); // Update bar (will show unknown)
+      allFetchedWords = {}; 
+      filterWordTable(); 
+      updateWordDistributionDisplay(); 
     }
   });
 }
@@ -190,16 +183,15 @@ function fetchWords() {
 document.querySelector("#wordForm").addEventListener("submit", (event) => {
   event.preventDefault();
 
-  const wordId = document.querySelector("#wordId").value; // This will be the actual key if editing
+  const wordId = document.querySelector("#wordId").value; 
   const wordData = {
     word: document.querySelector("#wordInput").value,
     definition: document.querySelector("#definitionInput").value,
     language: document.querySelector("#languageInput").value,
     level: parseInt(document.querySelector("#levelInput").value, 10),
-    // dateAdded will be set by background.js for new words, or preserved for edits
   };
 
-  if (!wordData.language) { // languageInput value is "" if "Any Language" selected
+  if (!wordData.language) { 
     alert("Please select a specific language for the word.");
     return;
   }
@@ -224,45 +216,223 @@ document.querySelector("#wordForm").addEventListener("submit", (event) => {
 function resetFormOnSubmit() {
   document.querySelector("#wordForm").reset();
   document.querySelector("#wordId").value = "";
-  // After resetting, the language and level dropdowns go to "Any Language"/"Any Level".
-  // Filter the table to reflect this.
   filterWordTable();
 }
 
 
 function filterWordTable() {
   const wordInputFilter = document.querySelector("#wordInput").value.toLowerCase().trim();
-  const languageFilter = document.querySelector("#languageInput").value; // Language from the main form for filtering
-  const levelFilter = document.querySelector("#levelInput").value;     // Level from the main form for filtering
+  const languageFilter = document.querySelector("#languageInput").value; 
+  const levelFilter = document.querySelector("#levelInput").value;     
 
   let wordsToDisplayInTable = Object.values(allFetchedWords);
 
-  // Apply word text filter only if it's not empty AND not in edit mode
   if (wordInputFilter && !document.querySelector("#wordId").value) {
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
           wordData.word.toLowerCase().includes(wordInputFilter)
       );
   }
-  // Apply language filter (if a specific language is selected)
-  if (languageFilter) { // True if not ""
+  if (languageFilter) { 
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
           wordData.language === languageFilter
       );
   }
-  // Apply level filter (if a specific level is selected)
-  if (levelFilter) { // True if not ""
+  if (levelFilter) { 
       wordsToDisplayInTable = wordsToDisplayInTable.filter(wordData =>
           String(wordData.level) === levelFilter
       );
   }
+  
+  // Update the global variable for export
+  currentlyDisplayedWords = [...wordsToDisplayInTable]; 
   populateTable(wordsToDisplayInTable);
+}
+
+// --- CSV Import/Export Functions ---
+
+/**
+ * Handles the export of currently filtered words to a CSV file.
+ */
+function handleExportToCSV() {
+    if (currentlyDisplayedWords.length === 0) {
+        alert("No words to export. Please clear filters or add words.");
+        return;
+    }
+
+    // Define CSV headers
+    const headers = ["Word", "Definition", "Language", "Level"];
+    // Prepare CSV content
+    let csvContent = headers.join(",") + "\n";
+
+    currentlyDisplayedWords.forEach(wordData => {
+        // Sanitize data for CSV (e.g., escape commas, quotes, newlines within fields)
+        const sanitize = (str) => {
+            if (str === null || typeof str === 'undefined') return '';
+            let s = String(str);
+            // If the string contains a comma, newline, or double quote, enclose it in double quotes
+            if (s.includes(',') || s.includes('\n') || s.includes('"')) {
+                // Escape existing double quotes by doubling them
+                s = s.replace(/"/g, '""');
+                return `"${s}"`;
+            }
+            return s;
+        };
+
+        const row = [
+            sanitize(wordData.word),
+            sanitize(wordData.definition),
+            sanitize(wordData.language),
+            sanitize(wordData.level)
+        ];
+        csvContent += row.join(",") + "\n";
+    });
+
+    // Create a Blob and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    if (link.download !== undefined) { // feature detection
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "word_list_export.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    } else {
+        alert("CSV export is not supported in your browser.");
+    }
+}
+
+/**
+ * Handles the import of words from a CSV file.
+ * @param {Event} event - The file input change event.
+ */
+function handleImportFromCSV(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    if (!file.name.endsWith('.csv')) {
+        alert("Please select a .csv file.");
+        // Reset file input so the same file can be selected again if needed
+        event.target.value = null; 
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const text = e.target.result;
+        const rows = text.split('\n').filter(row => row.trim() !== ''); // Split rows and remove empty ones
+
+        if (rows.length <= 1) {
+            alert("CSV file is empty or contains only headers.");
+            event.target.value = null;
+            return;
+        }
+
+        const headerRow = rows[0].trim().toLowerCase().split(',');
+        const expectedHeaders = ["word", "definition", "language", "level"];
+        
+        // Basic header validation
+        if (!expectedHeaders.every((h, i) => headerRow[i] && headerRow[i].trim() === h)) {
+             alert(`Invalid CSV header. Expected: "${expectedHeaders.join(',')}"\nFound: "${rows[0].trim()}"`);
+             event.target.value = null;
+             return;
+        }
+
+        let importedCount = 0;
+        let errorCount = 0;
+        const wordsToImport = [];
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i].trim();
+            if (!row) continue; // Skip empty lines
+
+            // Simple CSV parsing: split by comma. Does not handle commas within quoted fields well.
+            // For more robust parsing, a library would be needed.
+            const values = row.split(','); 
+
+            // Basic validation: check number of columns
+            if (values.length !== expectedHeaders.length) {
+                console.warn(`Skipping row ${i + 1}: Incorrect number of columns. Expected ${expectedHeaders.length}, got ${values.length}. Row: ${row}`);
+                errorCount++;
+                continue;
+            }
+            
+            // Trim and unquote values if they are quoted
+            const unquote = (str) => {
+                if (typeof str === 'string' && str.startsWith('"') && str.endsWith('"')) {
+                    return str.slice(1, -1).replace(/""/g, '"'); // Remove surrounding quotes and unescape double quotes
+                }
+                return str;
+            };
+
+            const word = unquote(values[0]?.trim());
+            const definition = unquote(values[1]?.trim());
+            const language = unquote(values[2]?.trim());
+            const levelStr = unquote(values[3]?.trim());
+            const level = parseInt(levelStr, 10);
+
+            if (!word || !definition || !language || isNaN(level) || level < 1 || level > 5) {
+                console.warn(`Skipping row ${i + 1}: Invalid data. Word: ${word}, Def: ${definition}, Lang: ${language}, Level: ${levelStr}. Row: ${row}`);
+                errorCount++;
+                continue;
+            }
+
+            // Check if language is one of the available languages
+            if (!availableLanguages.includes(language)) {
+                console.warn(`Skipping row ${i + 1}: Language "${language}" is not in the list of available languages. Word: ${word}. Row: ${row}`);
+                errorCount++;
+                continue;
+            }
+            
+            wordsToImport.push({ word, definition, language, level });
+        }
+
+        if (wordsToImport.length > 0) {
+            // Send words to background script for adding
+            // Using a loop of addWord for simplicity. For very large imports, a bulk add message would be better.
+            let wordsProcessed = 0;
+            wordsToImport.forEach(wordData => {
+                chrome.runtime.sendMessage({ action: "addWord", wordData }, (response) => {
+                    wordsProcessed++;
+                    if (response && response.error) {
+                        console.error("Error importing word:", wordData.word, response.error);
+                        // Optionally increment a specific import error counter
+                    } else {
+                        importedCount++;
+                    }
+                    // Refresh list after all messages are likely processed
+                    if (wordsProcessed === wordsToImport.length) {
+                        fetchWords(); 
+                        alert(`CSV Import Complete!\nSuccessfully imported: ${importedCount} words.\nSkipped due to errors: ${errorCount} words.`);
+                    }
+                });
+            });
+        } else if (errorCount > 0) {
+             alert(`CSV Import Failed.\nNo words were imported.\nSkipped due to errors: ${errorCount} words.`);
+        } else {
+            alert("No valid words found to import in the CSV file.");
+        }
+        event.target.value = null; // Reset file input
+    };
+
+    reader.onerror = function() {
+        alert("Error reading the CSV file.");
+        console.error("FileReader error:", reader.error);
+        event.target.value = null; // Reset file input
+    };
+
+    reader.readAsText(file);
 }
 
 
 // --- Event Listeners ---
 document.addEventListener("DOMContentLoaded", () => {
-    populateLanguageDropdowns(); // Populate language dropdowns
-    fetchWords(); // Initial fetch
+    populateLanguageDropdowns(); 
+    fetchWords(); 
 
     const distributionLangFilter = document.getElementById('distributionLanguageFilter');
     if (distributionLangFilter) {
@@ -271,26 +441,40 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelector("#wordTable tbody").addEventListener("click", (event) => {
         const target = event.target;
-        const row = target.closest(".clickableRow"); // Get the closest row for context
+        const row = target.closest(".clickableRow"); 
 
         if (target.classList.contains("deleteButton")) {
-            const wordId = target.dataset.id; // ID of the word to delete
+            const wordId = target.dataset.id; 
             const wordText = row ? row.querySelector("td:nth-child(1)").textContent : "this word";
             handleDelete(wordId, wordText);
-        } else if (row) { // If a row was clicked (but not a button inside it)
+        } else if (row) { 
             if (!target.closest("button")) {
-                const wordId = row.dataset.id; // ID of the word to edit
+                const wordId = row.dataset.id; 
                 handleEdit(wordId);
             }
         }
     });
 
-    // Form input listeners for live filtering of the table
     document.querySelector("#wordInput").addEventListener("input", () => {
-        if (!document.querySelector("#wordId").value) { // Only filter if not in edit mode
+        if (!document.querySelector("#wordId").value) { 
             filterWordTable();
         }
     });
     document.querySelector("#languageInput").addEventListener("change", filterWordTable);
     document.querySelector("#levelInput").addEventListener("change", filterWordTable);
+
+    // Event listeners for new CSV buttons
+    const exportButton = document.getElementById("exportCsvButton");
+    if (exportButton) {
+        exportButton.addEventListener("click", handleExportToCSV);
+    }
+
+    const importButton = document.getElementById("importCsvButton");
+    const csvFileInput = document.getElementById("csvFileInput");
+    if (importButton && csvFileInput) {
+        importButton.addEventListener("click", () => {
+            csvFileInput.click(); // Trigger the hidden file input
+        });
+        csvFileInput.addEventListener("change", handleImportFromCSV);
+    }
 });

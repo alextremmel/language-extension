@@ -5,6 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Word List</title>
   <link rel="stylesheet" href="../shared/style.css">
+  <style>
+    /* Add some basic styling for the import/export section */
+    .import-export-controls {
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: var(--light-background-color);
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      display: flex;
+      gap: 0.75rem; /* Space between buttons */
+      align-items: center;
+      flex-wrap: wrap; /* Allow wrapping on smaller screens */
+    }
+
+    .import-export-controls h2 {
+      margin: 0;
+      font-size: 1.1rem;
+      margin-right: 1rem; /* Space after the title */
+    }
+
+    .import-export-controls button {
+      margin-right: 0; /* Remove default button margin if any conflicts */
+    }
+
+    /* Hide the actual file input, we'll trigger it with a button */
+    #csvFileInput {
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -14,6 +43,13 @@
   </header>
 
   <h1>Word List</h1>
+
+  <div class="import-export-controls">
+    <h2>Manage Words</h2>
+    <button id="exportCsvButton">Export CSV</button>
+    <button id="importCsvButton">Import CSV</button>
+    <input type="file" id="csvFileInput" accept=".csv">
+  </div>
 
   <div id="overallWordStatsContainer" style="margin-bottom: 1.5rem; padding: 1rem; background-color: var(--light-background-color); border-radius: var(--border-radius); box-shadow: var(--box-shadow);">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
