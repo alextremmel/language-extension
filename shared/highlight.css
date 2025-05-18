@@ -1,28 +1,34 @@
 .highlighted-word {
   background-repeat: no-repeat;
-  background-position: bottom center;
-  background-size: calc(100% - 2px) 3px;
-  padding-bottom: 1px; /* spacing between text and underline */
+  background-position: bottom left; /* Align to left for cleaner start on multi-line */
+  background-size: 100% 2.5px;  /* Slightly thinner underline */
+  padding-bottom: 2px; /* Adjusted spacing for thinner underline */
+  display: inline; /* Ensure it flows with text */
+  /* No background color for the span itself, only the image underline */
 }
 
-/* Colors by level */
+/* Colors by level - kept the same distinct colors */
 .highlight-level-1 {
-  background-image: linear-gradient(to right, rgba(0, 216, 0, 0.8), rgba(0, 216, 0, 0.8));
+  background-image: linear-gradient(to right, rgba(0, 216, 0, 0.85), rgba(0, 216, 0, 0.85));
 }
 
 .highlight-level-2 {
-  background-image: linear-gradient(to right, rgba(255, 215, 0, 0.8), rgba(255, 215, 0, 0.8));
+  background-image: linear-gradient(to right, rgba(255, 215, 0, 0.85), rgba(255, 215, 0, 0.85));
 }
 
 .highlight-level-3 {
-  background-image: linear-gradient(to right, rgba(255, 149, 0, 0.8), rgba(255, 149, 0, 0.8));
+  background-image: linear-gradient(to right, rgba(255, 149, 0, 0.85), rgba(255, 149, 0, 0.85));
 }
 
 .highlight-level-4 {
-  background-image: linear-gradient(to right, rgba(255, 0, 0, 0.8), rgba(255, 0, 0, 0.8));
+  background-image: linear-gradient(to right, rgba(255, 0, 0, 0.85), rgba(255, 0, 0, 0.85));
 }
 
 .highlight-level-5 {
-  background-image: linear-gradient(to right, rgba(79, 135, 255, 0.8), rgba(79, 135, 255, 0.8));
+  background-image: linear-gradient(to right, rgba(79, 135, 255, 0.85), rgba(79, 135, 255, 0.85));
 }
 
+/* Add a subtle title tooltip style - optional but can improve the definition display */
+.highlighted-word[title] {
+    cursor: help; /* Indicate there's a tooltip */
+}
