@@ -46,11 +46,11 @@ function loadStoryView() {
         // For plain text display, direct injection is fine, but consider DOMPurify if content can be HTML.
         const storyContentDisplay = story.content.replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
+        // <p><strong>Language:</strong> ${story.language}</p>
+        // <p><strong>Level Distribution:</strong> ${formatLevelDistribution(story.levelDistribution)}</p>
 
         container.innerHTML = `
             <h1>${story.title}</h1>
-            <p><strong>Language:</strong> ${story.language}</p>
-            <p><strong>Level Distribution:</strong> ${formatLevelDistribution(story.levelDistribution)}</p>
             <div id="storyContent" style="white-space: pre-wrap; background-color: #f9f9f9; border: 1px solid #eee; padding: 10px; border-radius: 5px;">${storyContentDisplay}</div>
             <button id="editStoryButton">Edit Story</button>
             <button id="deleteStoryButton">Delete Story</button>
